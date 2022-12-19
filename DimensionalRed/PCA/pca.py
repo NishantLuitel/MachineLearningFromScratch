@@ -1,4 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
 
 class PCA():
     def __init__(self,X,num_dim):
@@ -65,3 +68,21 @@ class PCA():
         self.v_reduced = v[:,:self.d]
         self.scores = self.cX @self.v_reduced
         return self.scores
+    
+    
+    def plot_scores_2d(self, colors, grid = True):
+        if self.d < 2:
+            warnings.warn("No hay suficientes componentes prinicpales")
+            return
+        dim_1 = 1
+        dim_2 = 2
+        plt.style.use('seaborn-whitegrid')
+        fig = plt.figure(figsize=(15,10))
+        plt.axhline(c = 'black', alpha = 0.2)
+        plt.axvline(c = 'black', alpha = 0.2)
+        plt.scatter(self.scores.T[dim_1 - 1,:], self.scores.T[dim_2 - 1,:], c = colors)
+        plt.grid(grid)
+        plt.title('Principal Component Analysis')
+        plt.xlabel('{}st principle component'.format(dim_1))
+        plt.ylabel('{}nd principle component'.format(dim_2))
+        plt.show()
