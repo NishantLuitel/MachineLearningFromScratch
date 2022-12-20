@@ -1,3 +1,5 @@
+import numpy as np
+
 class RandomP():
     def __init__(self,X,k = None):
         self.X = X
