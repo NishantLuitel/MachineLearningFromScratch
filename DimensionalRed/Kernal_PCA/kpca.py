@@ -8,7 +8,7 @@ import seaborn as sns
 import warnings
 
 class KPCA:
-    def __init__(self, X, kernel, d):
+    def __init__(self, X, kernel, d, G =None):
         """
         KPCA object
         Parameters
@@ -21,6 +21,7 @@ class KPCA:
         self.X = X
         self.kernel = kernel 
         self.d = d
+        self.G = G
     
     def _is_pos_semidef(self, x):
         return np.all(x >= 0)
@@ -41,7 +42,7 @@ class KPCA:
             K.append(k_aux)
         K = np.array(K)
         # Centering K
-        ones = np.ones(K.shape)/c
+        ones = np.ones(K.shape)/r
         K = K - ones@K - K@ones + ones@K@ones
         return K
     
@@ -53,7 +54,15 @@ class KPCA:
         tuplas_eig: List of ordered tuples by singular 
                     values; (singular_value, eigenvector)
         """
-        self.K = self.__kernel_matrix()
+        if(type(self.G)!=np.ndarray):
+            self.K = self.__kernel_matrix()
+        else:
+            ones = np.ones(self.G.shape)/self.G.shape[0]            
+            K = self.G
+            #print(ones,K)
+            K = K - ones@K - K@ones + ones@K@ones
+            self.K = K
+            #print(self.K)
         eigval, eigvec = np.linalg.eig(self.K)
         if not self._is_pos_semidef(eigval):
             warnings.warn("La matriz K no es semidefinida positiva")

@@ -4,12 +4,14 @@ import warnings
 import numpy as np
 
 class MDS():
-    def __init__(self,X,num_dim):
+    def __init__(self,X,num_dim,G = None):
         
         assert num_dim<=X.shape[-1], "Projection dimension should be less than input dimension"
         
         self.X = X
         self.d = num_dim
+        self.G = G   #Gram kernel Matrix
+            
     
     def __centre_data(self):
         """
@@ -45,25 +47,45 @@ class MDS():
         Output:
 
         scores: 
+        
         """
-        if metric == 'euclidean':
-            self.gram = self.__eu_dissimilarity()
-        #    print(self.gram)
-        w,v = np.linalg.eig(self.gram)
-        #print(w)
-        w = np.real_if_close(w, tol=1)
-        v = np.real_if_close(v, tol=1)
+        
+        print(type(self.G))
+        if(type(self.G) == np.ndarray):
+            w,v = np.linalg.eig(self.G)
+            #print(w)
+            w = np.real_if_close(w, tol=1)
+            v = np.real_if_close(v, tol=1)
+            list_v = [(v[:,i],w[i]) for i in range(len(w))]
+            list_v.sort(key = lambda x:x[1],reverse = True)
+            v = np.array([list(j[0]) for j in list_v]).T
+            w_ordered = np.sort(w)[::-1]
+            #print(w_ordered)
+            self.emb = v[:,:self.d] @ np.sqrt(np.diag(w_ordered[:self.d]))
+            return self.emb
         
         
-        list_v = [(v[:,i],w[i]) for i in range(len(w))]
-        list_v.sort(key = lambda x:x[1],reverse = True)
-        v = np.array([list(j[0]) for j in list_v]).T
-        w_ordered = np.sort(w)[::-1]
-        #print(w_ordered)
-        
-        self.emb = v[:,:self.d] @ np.sqrt(np.diag(w_ordered[:self.d]))
+        else:
+            if metric == 'euclidean':
+                self.gram = self.__eu_dissimilarity()
+            #    print(self.gram)
+            w,v = np.linalg.eig(self.gram)
+            #print(w)
+            w = np.real_if_close(w, tol=1)
+            v = np.real_if_close(v, tol=1)
 
-        return self.emb
+
+            list_v = [(v[:,i],w[i]) for i in range(len(w))]
+            list_v.sort(key = lambda x:x[1],reverse = True)
+            v = np.array([list(j[0]) for j in list_v]).T
+            w_ordered = np.sort(w)[::-1]
+            #print(w_ordered)
+
+            self.emb = v[:,:self.d] @ np.sqrt(np.diag(w_ordered[:self.d]))
+
+            return self.emb
+
+        
     
     def plot_scores_2d(self, colors, grid = True, dim_1 = 1, dim_2 = 2):
         if self.d < 2:
