@@ -67,10 +67,19 @@ class BinaryLogisticRegression():
             return (self.p>0.5).astype(float) , self.p
         
         
+
 class MultiLogisticRegression():
-    def __init__(self,X,y,alpha = 0.5,learning_rate = 1,no_iter = 1000,use_bias = True):
+    '''
+        Expects y to either be one hot encoded label or 1 dimensional label with label index
         
-        self.X = X
+    '''
+    def __init__(self,X,y,alpha = 0.5,learning_rate = 1,no_iter = 1000,use_bias = True,centralize = True):
+        
+        
+        if centralize ==True:
+            self.X = self._centralize(X)
+        else:
+            self.X = X
         self.y = y
         self._check = False
         self.use_bias = use_bias
@@ -78,11 +87,11 @@ class MultiLogisticRegression():
         self.no_iter = no_iter
         
         if(len(self.y.shape) == 1):
-            max_index = max(self.y)
-            one_hots = np.zeros(self.N,max_index+1)
+            self.max_index = max(self.y)
+            self.one_hots = np.zeros((self.N,self.max_index+1))
             for i,_ in enumerate(y):
-                one_hots[i,_] = 1
-            print(one_hots)
+                self.one_hots[i,_] = 1
+#             print(self.one_hots)
         
         
         assert alpha>0, "Choose the regularizer constant(alpha) > 0"
@@ -97,19 +106,28 @@ class MultiLogisticRegression():
             self.X = temp
 #            print(temp)
 
-    def _logistic_function(self,x):
-        return(1/(1+np.exp(-x)))
-        
-        
+    def _softmax(self,x):
+        exponential = np.exp(x)
+        sumer = exponential.sum(axis = 1,keepdims = True)
+        return exponential/sumer
+        #return (exponential.T/sumer).T
+    
+    def _centralize(self,x):
+        x = x - np.mean(x, axis=1,keepdims =True)
+        x = x/np.std(x, axis=1,keepdims = True)
+        return x
               
     def fit(self):  
         
-        self.w = np.zeros(self.X.shape[1])
+        self.w = np.zeros((self.X.shape[1],self.max_index+1))
         
         
         #Use Gradient Descent
         for i in range(self.no_iter):
             self._update_weights()
+#             print(i, ':',self.w)
+#             if i==100:
+#                 break
         self._check = True
     
     
@@ -121,9 +139,11 @@ class MultiLogisticRegression():
     def _update_weights(self):
                 
         #Calculate Gradient
-        output = self.X @ self.w
+        output = self.X @ self.w 
+        #print(output)
         
-        self.dw = self.X.T @ (self._logistic_function(output)-self.y)/ self.X.shape[0]
+        self.dw = self.X.T @ (self._softmax(output)-self.one_hots)/ self.X.shape[0]
+#         print(self.dw)
         self.w = self.w - self.l_r*self.dw
         
         return self.w
@@ -134,8 +154,6 @@ class MultiLogisticRegression():
             temp = np.ones((data.shape[0],data.shape[1] + 1))
             temp[:,:-1] = data
             data = temp 
-        self.p = self._logistic_function(data @ self.w) 
-        if probs == False:
-            return (self.p>0.5).astype(float)
-        else:
-            return (self.p>0.5).astype(float) , self.p
+        #print(self.w)
+        self.p = self._softmax(data @ self.w)
+        return self.p
