@@ -40,6 +40,10 @@ class LinearRegression():
         return p
     
     
+    
+    
+    
+    
 class Ridge():
     def __init__(self,X,y,alpha = 0.5,no_iter = 100,use_bias = True):
         self.X = X
@@ -83,8 +87,16 @@ class Ridge():
             data = temp 
         p = data @ self.w
         return p
+
+    
+    
+    
+    
+    
+    
     
 class Lasso():
+    
     def __init__(self,X,y,alpha = 0.5,learning_rate = 1,no_iter = 1000,use_bias = True):
         self.X = X
         self.y = y

@@ -67,6 +67,14 @@ class BinaryLogisticRegression():
             return (self.p>0.5).astype(float) , self.p
         
         
+        
+        
+        
+        
+        
+        
+        
+        
 
 class MultiLogisticRegression():
     '''
