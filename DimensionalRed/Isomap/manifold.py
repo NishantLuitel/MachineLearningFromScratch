@@ -99,7 +99,7 @@ class Isomap():
             self.distance_matrix = self._make_adjacency_eps(eps = eps)
         else:
             self.distance_matrix = self._make_adjacency_knn()
-        print(self.distance_matrix)
+        #print(self.distance_matrix)
         
         
     
